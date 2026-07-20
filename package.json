@@ -4,9 +4,25 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/server.js",
+    "dev": "nodemon --watch src --exec ts-node src/server.ts",
+    "migrate": "ts-node src/scripts/migrate.ts",
+    "test": "jest --runInBand --detectOpenHandles",
+    "test:watch": "jest --watch",
+    "dbList": "docker exec -it dev_postgres psql -U postgres -d app_db"
   },
   "author": "Zhanysh Amanatov <amanatov.zhanysh22@gmail.com>",
   "license": "ISC",
-  "description": "User CRUD and Auth API"
+  "description": "User CRUD and Auth API",
+  "devDependencies": {
+    "@types/jest": "29.5.0",
+    "@types/node": "22.0.0",
+    "@types/pg": "8.11.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.7.0"
+  },
+  "dependencies": {
+    "dotenv": "16.4.0",
+    "pg": "8.13.0"
+  }
 }
