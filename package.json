@@ -1,0 +1,12 @@
+{
+  "name": "admin-panel-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Zhanysh Amanatov <amanatov.zhanysh22@gmail.com>",
+  "license": "ISC",
+  "description": "User CRUD and Auth API"
+}
