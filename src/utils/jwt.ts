@@ -1,0 +1,16 @@
+/*External dependencies */
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+import path from "path";
+
+/*Local dependences */
+import { TokenPayload } from "./types";
+
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
+const JWT_SECRET = process.env.JWT_SECRET || "default_jwt_secret";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
+
+export function generateToken(payload: TokenPayload): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as any });
+}
