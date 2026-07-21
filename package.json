@@ -9,6 +9,7 @@
     "migrate": "ts-node src/scripts/migrate.ts",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
+    "integration-tests": "jest integration-tests --runInBand",
     "dbList": "docker exec -it dev_postgres psql -U postgres -d app_db"
   },
   "author": "Zhanysh Amanatov <amanatov.zhanysh22@gmail.com>",

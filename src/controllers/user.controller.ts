@@ -1,21 +1,30 @@
 /*External dependencies */
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 /*Local dependencies */
 import pool from "../config/db";
 import { AuthenticatedRequest } from "../middleware/types";
 
-export async function listUsers(
+export async function deleteUser(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
   try {
+    const { id } = req.params;
+
     const result = await pool.query(
-      "SELECT id, email, role, created_at FROM users ORDER BY created_at DESC",
+      "DELETE FROM users WHERE id = $1 RETURNING id",
+      [id],
     );
 
-    res.json({ users: result.rows });
+    if (result.rowCount === 0) {
+      res.status(404).json({ error: "User not found" });
+
+      return;
+    }
+
+    res.json({ message: "User deleted successfully" });
   } catch (error) {
     next(error);
   }
@@ -47,6 +56,22 @@ export async function getUser(
     }
 
     res.json({ user: result.rows[0] });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function listUsers(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const result = await pool.query(
+      "SELECT id, email, role, created_at FROM users ORDER BY created_at DESC",
+    );
+
+    res.json({ users: result.rows });
   } catch (error) {
     next(error);
   }
@@ -116,32 +141,36 @@ export async function updateUser(
       message: "User updated successfully",
       user: result.rows[0],
     });
-  } catch (error) {
-    next(error);
-  }
-}
-
-export async function deleteUser(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
-    const { id } = req.params;
-
-    const result = await pool.query(
-      "DELETE FROM users WHERE id = $1 RETURNING id",
-      [id],
-    );
-
-    if (result.rowCount === 0) {
-      res.status(404).json({ error: "User not found" });
+  } catch (error: any) {
+    if (error.code === "23505") {
+      res.status(409).json({ message: "Email already in use" });
 
       return;
     }
 
-    res.json({ message: "User deleted successfully" });
-  } catch (error) {
     next(error);
   }
+}
+
+export function validateInput(req: Request, res: Response, next: NextFunction) {
+  const { id } = req.params;
+  const { email } = req.body;
+
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const UUID_REGEX =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  if (id && !UUID_REGEX.test(id as string)) {
+    console.log("shit");
+
+    return res.status(400).json({ error: "Invalid user ID format" });
+  }
+
+  if (email !== undefined) {
+    if (typeof email !== "string" || !EMAIL_REGEX.test(email.trim())) {
+      return res.status(400).json({ error: "Invalid email address format" });
+    }
+  }
+
+  next();
 }

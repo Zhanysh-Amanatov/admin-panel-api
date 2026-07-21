@@ -24,17 +24,25 @@ const generateToken = (id: string, role: string) => {
 
 describe("User Controller & Route Protection", () => {
   const adminToken = generateToken("admin-123", "admin");
-  const userToken = generateToken("user-123", "user");
+  const userToken = generateToken(
+    "d92441a1-cc60-498e-b3aa-5884bdc13e08",
+    "user",
+  );
 
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
-  describe("GET /api/users (listUsers)", () => {
+  describe("listUsers api test", () => {
     it("should successfully list users to admin", async () => {
       (pool.query as jest.Mock)
         .mockResolvedValueOnce({
-          rows: [{ id: "user-123", email: "user@test.com" }],
+          rows: [
+            {
+              id: "d92441a1-cc60-498e-b3aa-5884bdc13e08",
+              email: "user@test.com",
+            },
+          ],
         }) // Users query
         .mockResolvedValueOnce({ rows: [{ count: "1" }] }); // Count query
 
@@ -56,18 +64,26 @@ describe("User Controller & Route Protection", () => {
     });
   });
 
-  describe("GET /api/users/:id (getUser)", () => {
+  describe("getUser api test", () => {
     it("should successfully allow a regular user to get their OWN profile", async () => {
       (pool.query as jest.Mock).mockResolvedValueOnce({
-        rows: [{ id: "user-123", email: "user@test.com", role: "user" }],
+        rows: [
+          {
+            id: "d92441a1-cc60-498e-b3aa-5884bdc13e08",
+            email: "user@test.com",
+            role: "user",
+          },
+        ],
       });
 
       const response = await request(app)
-        .get("/api/users/user-123")
+        .get("/api/users/d92441a1-cc60-498e-b3aa-5884bdc13e08")
         .set("Authorization", `Bearer ${userToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.user.id).toBe("user-123");
+      expect(response.body.user.id).toBe(
+        "d92441a1-cc60-498e-b3aa-5884bdc13e08",
+      );
     });
 
     it("should successfully allow an admin to get ANY user profile", async () => {
@@ -93,29 +109,16 @@ describe("User Controller & Route Protection", () => {
     });
   });
 
-  describe("PUT /api/users/:id (updateUser)", () => {
-    it("should successfully allow user to update their OWN email", async () => {
-      (pool.query as jest.Mock).mockResolvedValueOnce({
-        rows: [{ id: "user-123", email: "newemail@test.com", role: "user" }],
-      });
-
+  describe("updateUser api test", () => {
+    it("should fail to update user when invalid email format is provided", async () => {
       const response = await request(app)
-        .put("/api/users/user-123")
+        .put("/api/users/d92441a1-cc60-498e-b3aa-5884bdc13e08")
         .set("Authorization", `Bearer ${userToken}`)
-        .send({ email: "newemail@test.com" });
+        .send({ email: "123" });
 
-      expect(response.status).toBe(200);
-      expect(response.body.user.email).toBe("newemail@test.com");
-    });
-
-    it("should prevent regular user from updating their role to admin", async () => {
-      const response = await request(app)
-        .put("/api/users/user-123")
-        .set("Authorization", `Bearer ${userToken}`)
-        .send({ role: "admin" });
-
-      expect(response.status).toBe(403);
-      expect(response.body.error).toMatch(/only admins can update roles/i);
+      expect(response.status).toBe(400);
+      expect(response.body.error).toEqual("Invalid email address format");
+      expect(pool.query).not.toHaveBeenCalled();
     });
 
     it("should reject regular user attempting to update ANOTHER user", async () => {
@@ -126,6 +129,36 @@ describe("User Controller & Route Protection", () => {
 
       expect(response.status).toBe(403);
       expect(pool.query).not.toHaveBeenCalled();
+    });
+
+    it("should successfully allow user to update their OWN email", async () => {
+      (pool.query as jest.Mock).mockResolvedValueOnce({
+        rows: [
+          {
+            id: "d92441a1-cc60-498e-b3aa-5884bdc13e08",
+            email: "newemail@test.com",
+            role: "user",
+          },
+        ],
+      });
+
+      const response = await request(app)
+        .put("/api/users/d92441a1-cc60-498e-b3aa-5884bdc13e08")
+        .set("Authorization", `Bearer ${userToken}`)
+        .send({ email: "newemail@test.com" });
+
+      expect(response.status).toBe(200);
+      expect(response.body.user.email).toBe("newemail@test.com");
+    });
+
+    it("should prevent regular user from updating their role to admin", async () => {
+      const response = await request(app)
+        .put("/api/users/d92441a1-cc60-498e-b3aa-5884bdc13e08")
+        .set("Authorization", `Bearer ${userToken}`)
+        .send({ role: "admin" });
+
+      expect(response.status).toBe(403);
+      expect(response.body.error).toMatch(/only admins can update roles/i);
     });
   });
 

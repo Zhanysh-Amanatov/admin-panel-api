@@ -7,6 +7,7 @@ import {
   getUser,
   listUsers,
   updateUser,
+  validateInput,
 } from "../controllers/user.controller";
 import {
   authenticateToken,
@@ -22,6 +23,6 @@ router.get("/", authorizeRoles("admin"), listUsers);
 router.delete("/:id", authorizeRoles("admin"), deleteUser);
 
 router.get("/:id", authorizeSelfOrAdmin, getUser);
-router.put("/:id", authorizeSelfOrAdmin, updateUser);
+router.put("/:id", authorizeSelfOrAdmin, validateInput, updateUser);
 
 export default router;
