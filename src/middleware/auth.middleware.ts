@@ -1,5 +1,5 @@
 /*External dependencies */
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 
 /*Local dependencies */
 import { verifyToken } from "../utils/jwt";
@@ -49,3 +49,19 @@ export const authorizeRoles = (...allowedRoles: string[]) => {
     next();
   };
 };
+
+export function authorizeSelfOrAdmin(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): void {
+  const { id } = req.params;
+  const isAdmin = req.user?.role === "admin";
+  const isSelf = req.user?.id === id;
+
+  if (isAdmin || isSelf) {
+    next();
+  } else {
+    res.status(403).json({ error: "Forbidden: access denied" });
+  }
+}
