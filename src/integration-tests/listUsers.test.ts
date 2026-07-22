@@ -39,8 +39,6 @@ describe("list users api test", () => {
       .get("/api/users")
       .set("Authorization", `Bearer ${adminToken}`);
 
-    console.log("shit:", result.body.users);
-
     expect(result.status).toBe(200);
     expect(Array.isArray(result.body.users)).toBe(true);
     expect(result.body.users.length).toBe(3); // admin, user1, user2

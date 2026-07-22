@@ -162,7 +162,7 @@ describe("User Controller & Route Protection", () => {
     });
   });
 
-  describe("DELETE /api/users/:id (deleteUser)", () => {
+  describe("deleteUser api test", () => {
     it("should successfully allow admin to delete a user", async () => {
       (pool.query as jest.Mock).mockResolvedValueOnce({
         rowCount: 1,

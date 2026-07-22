@@ -135,8 +135,6 @@ export async function updateUser(
       return;
     }
 
-    console.log("ressss:", result);
-
     res.json({
       message: "User updated successfully",
       user: result.rows[0],
@@ -161,8 +159,6 @@ export function validateInput(req: Request, res: Response, next: NextFunction) {
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   if (id && !UUID_REGEX.test(id as string)) {
-    console.log("shit");
-
     return res.status(400).json({ error: "Invalid user ID format" });
   }
 

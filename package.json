@@ -1,13 +1,12 @@
 {
   "name": "admin-panel-api",
   "version": "1.0.0",
-  "main": "index.js",
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "nodemon --watch src --exec ts-node src/server.ts",
     "migrate": "ts-node src/scripts/migrate.ts",
-    "test": "jest --coverage",
+    "test": "jest --coverage --testPathIgnorePatterns='node_modules|integration-tests'",
     "test:watch": "jest --watch",
     "integration-tests": "jest integration-tests --runInBand",
     "dbList": "docker exec -it dev_postgres psql -U postgres -d app_db"
@@ -19,6 +18,7 @@
     "@types/express": "5.0.6",
     "@types/jest": "29.5.0",
     "@types/jsonwebtoken": "9.0.10",
+    "@types/minio": "^7.1.0",
     "@types/node": "22.0.0",
     "@types/pg": "8.11.0",
     "@types/supertest": "7.2.1",
@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "dotenv": "16.4.0",
+    "minio": "^8.0.7",
     "pg": "8.13.0"
   }
 }
