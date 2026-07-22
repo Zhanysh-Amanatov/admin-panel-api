@@ -28,5 +28,5 @@ npm run migrate
 
 ## Available npm scripts:
 
-npm run test - Runs isolated unit test suites using Jest
-npm run integration-tests - Runs integration tests against live Docker containers (--runInBand)
+1. npm run test - Runs isolated unit test suites using Jest
+2. npm run integration-tests - Runs integration tests against live Docker containers (--runInBand)
