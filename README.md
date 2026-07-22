@@ -1,4 +1,4 @@
-# Welcome to user management API project!
+# Welcome to user management admin panel API project!
 
 Node.js REST API built with Express, TypeScript, PostgreSQL, and MinIO object storage. Features pure, zero-framework input validation, manual Base64 image parsing, JWT authentication, and isolated integration test suites using Docker Compose.
 
