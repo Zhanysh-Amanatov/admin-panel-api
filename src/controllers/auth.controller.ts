@@ -2,7 +2,7 @@
 import { Request, Response } from "express";
 
 /*Local dependencies */
-import pool from "../config/db";
+import * as userRepository from "../repositories/user.repository";
 import { generateToken } from "../utils/jwt";
 import { comparePassword } from "../utils/password";
 
@@ -18,20 +18,17 @@ export async function login(req: Request, res: Response): Promise<void> {
   }
 
   try {
-    const result = await pool.query(
-      "SELECT id, email, password_hash, role FROM users WHERE email = $1",
-      [email],
-    );
+    const user = await userRepository.findUserByEmail(email);
 
-    if (result.rows.length === 0) {
+    if (!user) {
       res.status(401).json({ error: invalidCredentialsMsg });
-    }
 
-    const user = result.rows[0];
+      return;
+    }
 
     const isPasswordValid = await comparePassword({
       plainPassword: password,
-      hashId: user.password_hash,
+      hashId: user.password,
     });
 
     if (!isPasswordValid) {
@@ -40,7 +37,7 @@ export async function login(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const token = generateToken({ userId: user.id, role: user.role });
+    const token = generateToken({ id: user.id, role: user.role });
 
     res.status(200).json({
       message: "Login successful",

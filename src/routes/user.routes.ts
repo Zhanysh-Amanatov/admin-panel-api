@@ -8,13 +8,13 @@ import {
   getUser,
   listUsers,
   updateUser,
-  validateInput,
 } from "../controllers/user.controller";
 import {
   authenticateToken,
   authorizeRoles,
   authorizeSelfOrAdmin,
 } from "../middleware/auth.middleware";
+import { validateInput } from "../middleware/validateUserInput";
 
 const router = Router();
 

@@ -2,7 +2,7 @@
 import app from "./app";
 import { initMinioBucket } from "./config/minio";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 initMinioBucket()
   .then(() => {

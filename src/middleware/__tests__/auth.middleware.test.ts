@@ -128,7 +128,7 @@ describe("Middlewares test", () => {
 
     it("should call next() if user role is included in allowed roles", () => {
       mockRequest = {
-        user: { id: "123", email: "admin@example.com", role: "admin" },
+        user: { id: "123", role: "admin" },
       };
 
       const middleware = authorizeRoles("admin", "manager");
@@ -144,7 +144,7 @@ describe("Middlewares test", () => {
 
     it("should return 403 Forbidden if user role is not allowed", () => {
       mockRequest = {
-        user: { id: "123", email: "user@example.com", role: "user" },
+        user: { id: "123", role: "user" },
       };
 
       const middleware = authorizeRoles("admin");

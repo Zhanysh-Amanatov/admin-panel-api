@@ -1,9 +1,9 @@
 /*External dependencies */
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 
 /*Local dependencies */
-import pool from "../config/db";
 import { AuthenticatedRequest } from "../middleware/types";
+import * as userRepository from "../repositories/user.repository";
 
 export async function deleteUser(
   req: AuthenticatedRequest,
@@ -13,14 +13,10 @@ export async function deleteUser(
   try {
     const { id } = req.params;
 
-    const result = await pool.query(
-      "DELETE FROM users WHERE id = $1 RETURNING id",
-      [id],
-    );
+    const deleted = await userRepository.deleteUserById(id as string);
 
-    if (result.rowCount === 0) {
+    if (!deleted) {
       res.status(404).json({ error: "User not found" });
-
       return;
     }
 
@@ -44,18 +40,14 @@ export async function getUser(
       return;
     }
 
-    const result = await pool.query(
-      "SELECT id, email, role, created_at FROM users WHERE id = $1",
-      [id],
-    );
+    const user = await userRepository.findUserById(id as string);
 
-    if (result.rows.length === 0) {
+    if (!user) {
       res.status(404).json({ error: "User not found" });
-
       return;
     }
 
-    res.json({ user: result.rows[0] });
+    res.json({ user });
   } catch (error) {
     next(error);
   }
@@ -67,11 +59,9 @@ export async function listUsers(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const result = await pool.query(
-      "SELECT id, email, role, created_at FROM users ORDER BY created_at DESC",
-    );
+    const users = await userRepository.findAllUsers();
 
-    res.json({ users: result.rows });
+    res.json({ users });
   } catch (error) {
     next(error);
   }
@@ -91,6 +81,7 @@ export async function updateUser(
 
     if (!isAdmin && !isSelf) {
       res.status(403).json({ error: "Forbidden: access denied" });
+
       return;
     }
 
@@ -102,42 +93,26 @@ export async function updateUser(
       return;
     }
 
-    const updates: string[] = [];
-    const values: any[] = [];
-
-    if (email) {
-      values.push(email);
-      updates.push(`email = $${values.length}`);
-    }
-
-    if (role && isAdmin) {
-      values.push(role);
-      updates.push(`role = $${values.length}`);
-    }
-
-    if (updates.length === 0) {
+    if (!email && !role) {
       res.status(400).json({ error: "No valid fields provided for update" });
+
       return;
     }
 
-    values.push(id);
-    const query = `
-      UPDATE users 
-      SET ${updates.join(", ")} 
-      WHERE id = $${values.length} 
-      RETURNING id, email, role, created_at
-    `;
+    const updatedUser = await userRepository.updateUserById(id as string, {
+      email,
+      role: isAdmin ? role : undefined,
+    });
 
-    const result = await pool.query(query, values);
-
-    if (result.rows.length === 0) {
+    if (!updatedUser) {
       res.status(404).json({ error: "User not found" });
+
       return;
     }
 
     res.json({
       message: "User updated successfully",
-      user: result.rows[0],
+      user: updatedUser,
     });
   } catch (error: any) {
     if (error.code === "23505") {
@@ -148,25 +123,4 @@ export async function updateUser(
 
     next(error);
   }
-}
-
-export function validateInput(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const { email } = req.body;
-
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const UUID_REGEX =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-  if (id && !UUID_REGEX.test(id as string)) {
-    return res.status(400).json({ error: "Invalid user ID format" });
-  }
-
-  if (email !== undefined) {
-    if (typeof email !== "string" || !EMAIL_REGEX.test(email.trim())) {
-      return res.status(400).json({ error: "Invalid email address format" });
-    }
-  }
-
-  next();
 }

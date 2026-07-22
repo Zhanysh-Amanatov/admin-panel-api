@@ -120,7 +120,7 @@ describe("POST /api/auth/login", () => {
 
     // Verify DB was queried with the correct email
     expect(pool.query).toHaveBeenCalledWith(
-      "SELECT id, email, password_hash, role FROM users WHERE email = $1",
+      "SELECT id, email, password, role FROM users WHERE email = $1",
       ["test@example.com"],
     );
   });

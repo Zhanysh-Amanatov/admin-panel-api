@@ -1,6 +1,6 @@
 export interface TokenPayload {
+  id: string;
   role: string;
-  userId: string;
 }
 
 export interface ComparePasswordPayload {
